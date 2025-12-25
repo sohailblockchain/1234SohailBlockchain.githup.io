@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>TrendUpLive Demo — Project Profiles + Permanent History + Governance</title>
+  <meta name="description" content="TrendUpLive demo UI showing project upload template, immutable history, voting governance, ads archive, and SEO-first public pages." />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://example.com/project/trendup-demo" />
+
+  <!-- OpenGraph -->
+  <meta property="og:title" content="TrendUpLive Demo — Permanent Records + Project Profiles" />
+  <meta property="og:description" content="Public, crawlable, immutable history UI demo." />
+  <meta property="og:type" content="website" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Small helper: keep code blocks readable */
+    pre { white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100">
+  <!-- Top Bar -->
+  <header class="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/85 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+      <div class="flex items-center gap-3">
+        <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400"></div>
+        <div>
+          <div class="text-base font-semibold leading-tight">TrendUpLive</div>
+          <div class="text-xs text-slate-400">Demo UI — Permanent Memory + SEO-first</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btnReadOnly" class="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm hover:bg-slate-800">
+          Read-only: ON
+        </button>
+        <button id="btnLogin" class="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-medium hover:bg-indigo-500">
+          Login (mock)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <main class="mx-auto grid max-w-7xl grid-cols-12 gap-4 px-4 py-6">
+    <!-- Left Nav -->
+    <aside class="col-span-12 md:col-span-3">
+      <nav class="rounded-2xl border border-slate-800 bg-slate-900/40 p-3">
+        <div class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Navigation</div>
+        <div class="space-y-1">
+          <a href="#/home" class="navlink block rounded-xl px-3 py-2 hover:bg-slate-800">🏠 Home (Record Stream)</a>
+          <a href="#/search" class="navlink block rounded-xl px-3 py-2 hover:bg-slate-800">🔎 Search</a>
+          <a href="#/projects" class="navlink block rounded-xl px-3 py-2 hover:bg-slate-800">📁 Projects Directory</a>
+          <a href="#/project/trendup" class="navlink block rounded-xl px-3 py-2 hover:bg-slate-800">🧩 Project Profile</a>
+          <a href="#/upload" class="navlink block rounded-xl px-3 py-2 hover:bg-slate-800">⬆️ Upload Project (Template)</a>
+          <a href="#/governance" class="navlink block rounded-xl px-3 py-2 hover:bg-slate-800">🗳️ Governance</a>
+          <a href="#/ads" class="navlink block rounded-xl px-3 py-2 hover:bg-slate-800">📢 Ads Archive</a>
+          <a href="#/notifications" class="navlink block rounded-xl px-3 py-2 hover:bg-slate-800">🔔 Notifications</a>
+        </div>
+
+        <div class="mt-4 rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div class="text-xs font-semibold text-slate-300">Non-Optional Rule</div>
+          <p class="mt-1 text-xs text-slate-400">
+            “Any change must leave a visible scar. Nothing public changes silently; nothing disappears without a trace.”
+          </p>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <section class="col-span-12 md:col-span-6">
+      <div id="view" class="space-y-4"></div>
+    </section>
+
+    <!-- Right Sidebar -->
+    <aside class="col-span-12 md:col-span-3">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-semibold">Market (cached)</div>
+          <span class="rounded-full border border-slate-700 px-2 py-0.5 text-xs text-slate-300">/market/tokens</span>
+        </div>
+        <div id="market" class="mt-3 space-y-2"></div>
+        <p class="mt-3 text-xs text-slate-500">
+          Demo data here — in production the backend caches CoinGecko/CMC and serves fast.
+        </p>
+      </div>
+
+      <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+        <div class="text-sm font-semibold">Status</div>
+        <ul class="mt-2 space-y-1 text-xs text-slate-400">
+          <li>✅ Public read-only access</li>
+          <li>✅ Version history + tombstones</li>
+          <li>✅ Governance votes immutable after finalize</li>
+          <li>✅ Ads archived forever</li>
+          <li>✅ Search filters incl. edited/deleted/identity</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="border-t border-slate-800 py-6">
+    <div class="mx-auto max-w-7xl px-4 text-xs text-slate-500">
+      TrendUpLive Demo UI — single HTML file. Hook these views to your backend APIs when ready.
+      Sohail Ahmed Sr.web3 Engineer
+    </div>
+  </footer>
+
+<script>
+/* ---------------------------
+   Mock State + Data
+----------------------------*/
+let state = {
+  readOnly: true,
+  loggedIn: false,
+  activeUser: { id: "u1", name: "Sohail (Demo)" }
+};
+
+const nowISO = () => new Date().toISOString();
+
+const projects = [
+  {
+    id: "p1",
+    slug: "trendup",
+    name: "TrendUp Protocol",
+    logo: "TU",
+    description: "Crypto social + governance platform. Public, crawlable, immutable history.",
+    links: {
+      website: "https://trend-up-coin.netlify.app/profile",
+      whitepaper: "#",
+      twitter: "#"
+    },
+    createdAtUtc: "2025-12-01T00:00:00.000Z",
+    reputation: { ageDays: 25, activity: "High", score: 72 },
+    modules: {
+      governance: false,
+      tokenContract: true,
+      claimsRoadmap: true,
+      audits: false,
+      treasury: false
+    },
+    identityHistory: [
+      {
+        type: "identity_change",
+        marker: "⚠️",
+        field: "Wallet address",
+        from: "0xOLD...1234",
+        to: "0xNEW...9ABC",
+        atUtc: "2025-12-15T09:10:00.000Z"
+      },
+      {
+        type: "updated",
+        marker: "🟣",
+        field: "Logo",
+        from: "TU (old)",
+        to: "TU (new)",
+        atUtc: "2025-12-20T13:30:00.000Z"
+      }
+    ],
+    documents: [
+      { id: "d1", type: "Whitepaper", version: 1, title: "Whitepaper v1", atUtc: "2025-12-01T10:00:00.000Z", hash: "sha256:abc..." },
+      { id: "d2", type: "Testnet Results", version: 2, title: "Testnet Run #2 (Auditor)", atUtc: "2025-12-22T07:00:00.000Z", hash: "sha256:def..." }
+    ]
+  }
+];
+
+const posts = [
+  {
+    id: "post1",
+    projectId: "p1",
+    author: "TrendUp Protocol",
+    createdAtUtc: "2025-12-10T08:00:00.000Z",
+    status: "active", // active | deleted
+    changeMarker: null, // 🔺 edited, 🟣 updated, ⚠️ identity_change, 🗑 deleted
+    current: {
+      text: "We are publishing the MVP governance roadmap this week. Stay tuned!",
+      tags: ["#roadmap", "#governance"]
+    },
+    versions: [
+      { v: 1, atUtc: "2025-12-10T08:00:00.000Z", text: "We are publishing the MVP governance roadmap this week. Stay tuned!" }
+    ]
+  },
+  {
+    id: "post2",
+    projectId: "p1",
+    author: "TrendUp Protocol",
+    createdAtUtc: "2025-12-12T11:20:00.000Z",
+    status: "active",
+    changeMarker: "🔺",
+    current: {
+      text: "Edited: Whitepaper v1 uploaded. Testnet results coming soon.",
+      tags: ["#docs", "#testnet"]
+    },
+    versions: [
+      { v: 1, atUtc: "2025-12-12T11:20:00.000Z", text: "Whitepaper uploaded. Testnet results coming soon." },
+      { v: 2, atUtc: "2025-12-13T09:05:00.000Z", text: "Edited: Whitepaper v1 uploaded. Testnet results coming soon." }
+    ]
+  },
+  {
+    id: "post3",
+    projectId: "p1",
+    author: "TrendUp Protocol",
+    createdAtUtc: "2025-12-14T06:00:00.000Z",
+    status: "deleted",
+    changeMarker: "🗑",
+    deleted: {
+      reason: "Deleted by Author",
+      by: "author",
+      atUtc: "2025-12-14T18:30:00.000Z"
+    },
+    current: { text: "This post was removed.", tags: [] },
+    versions: [
+      { v: 1, atUtc: "2025-12-14T06:00:00.000Z", text: "Initial token distribution draft posted for review." }
+    ]
+  }
+];
+
+const proposals = [
+  {
+    id: "g1",
+    category: "General",
+    title: "What should transaction fees be set to?",
+    endsAtUtc: "2026-01-05T00:00:00.000Z",
+    status: "live", // live | finalized
+    options: [
+      { label: "Low fees", votes: 63 },
+      { label: "Medium fees", votes: 27 },
+      { label: "High fees", votes: 10 }
+    ],
+    immutableAfterFinalize: true
+  },
+  {
+    id: "g2",
+    category: "HODL",
+    title: "Enable governance module for TrendUp Protocol profile?",
+    endsAtUtc: "2025-12-18T00:00:00.000Z",
+    status: "finalized",
+    options: [
+      { label: "Enable", votes: 71 },
+      { label: "Keep OFF", votes: 29 }
+    ],
+    finalizedAtUtc: "2025-12-18T00:05:00.000Z",
+    immutableAfterFinalize: true
+  }
+];
+
+const ads = [
+  {
+    id: "ad1",
+    projectSlug: "trendup",
+    label: "Ad",
+    content: "TrendUp Protocol — Explore our latest testnet run and roadmap updates.",
+    targeting: "Global / Crypto Social",
+    duration: "7 days",
+    spendUsd: 250,
+    performance: { impressions: 12000, clicks: 610 },
+    atUtc: "2025-12-20T10:00:00.000Z",
+    archivedForever: true
+  }
+];
+
+let notifications = [
+  { id: "n1", atUtc: "2025-12-22T12:10:00.000Z", text: "You were mentioned in a post by TrendUp Protocol.", read: false },
+  { id: "n2", atUtc: "2025-12-23T08:30:00.000Z", text: "A post you interacted with was edited (🔺).", read: false },
+  { id: "n3", atUtc: "2025-12-24T09:00:00.000Z", text: "A project you follow uploaded Testnet Results (append-only).", read: true }
+];
+
+const marketTokens = [
+  { sym: "BTC", price: "97,120", change: "+1.2%" },
+  { sym: "BNB", price: "720", change: "+0.4%" },
+  { sym: "ADA", price: "1.08", change: "-0.2%" },
+  { sym: "LINK", price: "24.40", change: "+2.1%" }
+];
+
+/* ---------------------------
+   Utilities
+----------------------------*/
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+}
+
+function badge(marker, label) {
+  const map = {
+    "🔺": "border-amber-500/40 bg-amber-500/10 text-amber-200",
+    "🟣": "border-fuchsia-500/40 bg-fuchsia-500/10 text-fuchsia-200",
+    "⚠️": "border-yellow-500/40 bg-yellow-500/10 text-yellow-200",
+    "🗑": "border-slate-500/40 bg-slate-500/10 text-slate-200",
+  };
+  const cls = map[marker] || "border-slate-700 bg-slate-900 text-slate-200";
+  return `<span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${cls}">
+    <span>${marker}</span><span>${label}</span>
+  </span>`;
+}
+
+function card(title, bodyHtml) {
+  return `
+    <article class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 shadow-sm">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-sm font-semibold">${title}</h2>
+      </div>
+      <div class="text-sm text-slate-200">${bodyHtml}</div>
+    </article>
+  `;
+}
+
+function actionGate(actionName) {
+  if (state.readOnly) {
+    return `<div class="mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">
+      Reading is open. <span class="font-semibold">${actionName}</span> requires an account.
+    </div>`;
+  }
+  return "";
+}
+
+/* ---------------------------
+   Views
+----------------------------*/
+function renderHome() {
+  const items = posts
+    .slice()
+    .sort((a,b) => new Date(b.createdAtUtc) - new Date(a.createdAtUtc))
+    .map(p => renderPostCard(p, { showProject: true }))
+    .join("");
+
+  return `
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <h1 class="text-lg font-semibold">Record Stream (Default)</h1>
+      <p class="mt-1 text-sm text-slate-400">
+        Chronological public record stream: posts + updates. Feeds are views; records are permanent.
+      </p>
+    </div>
+
+    ${items}
+  `;
+}
+
+function renderProjectsDirectory() {
+  const list = projects.map(p => `
+    <a href="#/project/${p.slug}" class="block rounded-xl border border-slate-800 bg-slate-950 p-3 hover:bg-slate-900">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-sm font-semibold">${p.name}</div>
+          <div class="mt-1 text-xs text-slate-400">${p.description}</div>
+          <div class="mt-2 text-xs text-slate-500">Age: ${p.reputation.ageDays} days • Activity: ${p.reputation.activity} • Reputation: ${p.reputation.score}</div>
+        </div>
+        <span class="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300">Public</span>
+      </div>
+    </a>
+  `).join("");
+
+  return card("Projects Directory", `
+    <p class="text-sm text-slate-400">All projects use the same modules and the same rules (neutrality). Public read-only access.</p>
+    <div class="mt-3 space-y-2">${list}</div>
+  `);
+}
+
+function renderProjectProfile(slug) {
+  const p = projects.find(x => x.slug === slug);
+  if (!p) return card("Not Found", "Project not found.");
+
+  const moduleToggle = (key, label, note) => {
+    const on = !!p.modules[key];
+    return `
+      <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+        <div>
+          <div class="text-sm font-medium">${label}</div>
+          <div class="text-xs text-slate-500">${note}</div>
+        </div>
+        <button class="modToggle rounded-xl border border-slate-700 px-3 py-2 text-xs ${on ? "bg-indigo-600/30 text-indigo-200" : "bg-slate-900 text-slate-300"}"
+          data-key="${key}">
+          ${on ? "ON" : "OFF"}
+        </button>
+      </div>
+    `;
+  };
+
+  const identity = p.identityHistory.map(e => `
+    <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-medium">${badge(e.marker, e.type.replace("_"," "))} <span class="ml-2">${e.field}</span></div>
+        <div class="text-xs text-slate-400">${fmtDate(e.atUtc)} (UTC stored)</div>
+      </div>
+      <div class="mt-2 text-xs text-slate-400">Changed from <span class="text-slate-200">${e.from}</span> → <span class="text-slate-200">${e.to}</span></div>
+    </div>
+  `).join("");
+
+  const docs = p.documents.map(d => `
+    <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-medium">${d.type} • v${d.version}</div>
+        <div class="text-xs text-slate-400">${fmtDate(d.atUtc)}</div>
+      </div>
+      <div class="mt-1 text-xs text-slate-400">${d.title}</div>
+      <div class="mt-2 text-xs text-slate-500">Integrity hash: <span class="font-mono">${d.hash}</span></div>
+      <div class="mt-2 text-xs text-slate-500">Rule: append-only, versioned, tombstone if removed.</div>
+    </div>
+  `).join("");
+
+  const pPosts = posts
+    .filter(x => x.projectId === p.id)
+    .sort((a,b) => new Date(b.createdAtUtc) - new Date(a.createdAtUtc))
+    .map(x => renderPostCard(x, { showProject: false }))
+    .join("");
+
+  return `
+    <article class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 text-lg font-bold">${p.logo}</div>
+          <div>
+            <h1 class="text-lg font-semibold">${p.name}</h1>
+            <p class="mt-1 text-sm text-slate-400">${p.description}</p>
+            <div class="mt-2 flex flex-wrap gap-2 text-xs">
+              <a class="rounded-full border border-slate-700 px-2 py-1 hover:bg-slate-800" target="_blank" href="${p.links.website}">Website</a>
+              <a class="rounded-full border border-slate-700 px-2 py-1 hover:bg-slate-800" href="${p.links.whitepaper}">Whitepaper</a>
+              <a class="rounded-full border border-slate-700 px-2 py-1 hover:bg-slate-800" href="${p.links.twitter}">X/Twitter</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-right text-xs text-slate-400">
+          <div>Age: ${p.reputation.ageDays} days</div>
+          <div>Activity: ${p.reputation.activity}</div>
+          <div>Reputation score: ${p.reputation.score}</div>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3">
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">
+          <div class="font-semibold">Public Read-Only</div>
+          <div class="mt-1 text-slate-400">Anyone can view this project without login. Login is only needed for actions (post/vote/comment/ads).</div>
+        </div>
+
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div class="text-sm font-semibold">Optional Modules (Toggle)</div>
+          <div class="mt-2 space-y-2">
+            ${moduleToggle("governance","Governance / Voting","OFF by default. If enabled, votes are public and immutable once finalized.")}
+            ${moduleToggle("tokenContract","Token Contract Details","Contract address, chain, verified source links.")}
+            ${moduleToggle("claimsRoadmap","Claims & Roadmap","Claims must be timestamped + evidence append-only.")}
+            ${moduleToggle("audits","Audits","Audit PDFs and links, immutable history.")}
+            ${moduleToggle("treasury","Treasury","Treasury stats + verifiable references (optional).")}
+          </div>
+          ${actionGate("Changing modules")}
+        </div>
+      </div>
+    </article>
+
+    ${card("Documents (Append-only, Versioned)", `<div class="space-y-2">${docs}</div>`)}
+
+    ${card("Identity Change History (Visible + Timestamped)", `<div class="space-y-2">${identity}</div>`)}
+
+    ${card("Project Posts & Updates", `
+      <p class="text-sm text-slate-400">Posts are permanent records. Edits show history. Deletions show tombstones.</p>
+      <div class="mt-3 space-y-3">${pPosts}</div>
+    `)}
+  `;
+}
+
+function renderPostCard(p, opts) {
+  const proj = projects.find(x => x.id === p.projectId);
+  const markerLabel = (m) => {
+    if (m === "🔺") return "Edited";
+    if (m === "🟣") return "Updated";
+    if (m === "⚠️") return "Identity change";
+    if (m === "🗑") return "Deleted";
+    return null;
+  };
+
+  const topLine = `
+    <div class="flex items-center justify-between">
+      <div class="text-xs text-slate-400">
+        <span class="font-semibold text-slate-200">${p.author}</span>
+        ${opts.showProject ? `<span class="mx-1">•</span><a class="underline decoration-slate-600 hover:decoration-slate-300" href="#/project/${proj.slug}">${proj.name}</a>` : ""}
+        <span class="mx-1">•</span>
+        <span>${fmtDate(p.createdAtUtc)}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        ${p.changeMarker ? badge(p.changeMarker, markerLabel(p.changeMarker)) : ""}
+        <a class="rounded-full border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800" href="#/post/${p.id}">
+          Permalink
+        </a>
+      </div>
+    </div>
+  `;
+
+  if (p.status === "deleted") {
+    return `
+      <article class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+        ${topLine}
+        <div class="mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div class="text-sm font-semibold">🗑 Tombstone</div>
+          <div class="mt-1 text-sm text-slate-300">${p.deleted.reason}</div>
+          <div class="mt-1 text-xs text-slate-500">Deleted by: ${p.deleted.by} • ${fmtDate(p.deleted.atUtc)}</div>
+          <div class="mt-2 text-xs text-slate-500">Rule: No hard deletion. Content remains archived and audit-accessible.</div>
+        </div>
+      </article>
+    `;
+  }
+
+  return `
+    <article class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      ${topLine}
+      <p class="mt-3 text-sm leading-relaxed">${escapeHtml(p.current.text)}</p>
+      <div class="mt-2 flex flex-wrap gap-2">
+        ${(p.current.tags || []).map(t => `<span class="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300">${t}</span>`).join("")}
+      </div>
+
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <button class="rounded-xl border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800" onclick="go('#/post/${p.id}')">View history</button>
+        <button class="rounded-xl border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800" ${state.readOnly ? "disabled" : ""}>Like</button>
+        <button class="rounded-xl border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800" ${state.readOnly ? "disabled" : ""}>Reply</button>
+      </div>
+
+      ${state.readOnly ? actionGate("Interacting") : ""}
+    </article>
+  `;
+}
+
+function renderPostDetail(postId) {
+  const p = posts.find(x => x.id === postId);
+  if (!p) return card("Not Found", "Post not found.");
+
+  const versions = (p.versions || []).slice().sort((a,b) => b.v - a.v);
+  const current = versions[0];
+  const previous = versions[1];
+
+  // simple diff (very basic) for demo
+  const diffHtml = (() => {
+    if (!previous) return `<div class="text-xs text-slate-500">No diff available (only one version).</div>`;
+    return `
+      <div class="text-xs text-slate-400">Diff (demo):</div>
+      <div class="mt-2 rounded-xl border border-slate-800 bg-slate-950 p-3">
+        <div class="text-xs text-slate-500">v${previous.v} → v${current.v}</div>
+        <div class="mt-2 text-sm">
+          <div class="text-slate-400">Old:</div>
+          <div class="mt-1">${escapeHtml(previous.text)}</div>
+          <div class="mt-3 text-slate-400">New:</div>
+          <div class="mt-1">${escapeHtml(current.text)}</div>
+        </div>
+      </div>
+    `;
+  })();
+
+  const historyList = versions.map(v => `
+    <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-semibold">Version v${v.v}</div>
+        <div class="text-xs text-slate-400">${fmtDate(v.atUtc)}</div>
+      </div>
+      <div class="mt-2 text-sm">${escapeHtml(v.text)}</div>
+      <div class="mt-2 text-xs text-slate-500">
+        Version permalink: <span class="font-mono">/post/${p.id}/v/${v.v}</span> (must remain indexable)
+      </div>
+    </div>
+  `).join("");
+
+  return `
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <h1 class="text-lg font-semibold">Post Details (Permanent Record)</h1>
+      <p class="mt-1 text-sm text-slate-400">Each edit creates a new version. Deletions create tombstones. No silent overwrites.</p>
+    </div>
+
+    ${renderPostCard(p, { showProject: true })}
+
+    ${card("Edit History (Immutable)", historyList)}
+
+    ${card("Diff View", diffHtml)}
+  `;
+}
+
+function renderGovernance() {
+  const rows = proposals.map(pr => {
+    const total = pr.options.reduce((s,o)=>s+o.votes,0) || 1;
+    const bars = pr.options.map(o => {
+      const pct = Math.round((o.votes/total)*100);
+      return `
+        <div class="mt-2">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>${o.label}</span><span>${pct}%</span>
+          </div>
+          <div class="mt-1 h-2 w-full rounded-full bg-slate-800">
+            <div class="h-2 rounded-full bg-indigo-500" style="width:${pct}%"></div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const statusBadge = pr.status === "finalized"
+      ? badge("🟣","Finalized (Immutable)")
+      : badge("⚠️","Live Vote");
+
+    const footer = pr.status === "finalized"
+      ? `<div class="mt-3 text-xs text-slate-500">Finalized at: ${fmtDate(pr.finalizedAtUtc)} • Results immutable: YES</div>`
+      : `<div class="mt-3 text-xs text-slate-500">Ends: ${fmtDate(pr.endsAtUtc)} • Results immutable after finalize: YES</div>
+         ${actionGate("Voting")}`;
+
+    return `
+      <article class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="text-xs text-slate-400">${pr.category}</div>
+            <h3 class="mt-1 text-sm font-semibold">${escapeHtml(pr.title)}</h3>
+          </div>
+          ${statusBadge}
+        </div>
+
+        <div class="mt-3">${bars}</div>
+
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button class="rounded-xl border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800" ${state.readOnly ? "disabled" : ""}>Vote A</button>
+          <button class="rounded-xl border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800" ${state.readOnly ? "disabled" : ""}>Vote B</button>
+        </div>
+
+        ${footer}
+      </article>
+    `;
+  }).join("");
+
+  return `
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <h1 class="text-lg font-semibold">Governance</h1>
+      <p class="mt-1 text-sm text-slate-400">
+        Votes are public. Once finalized, results are immutable. No re-vote until the next cycle.
+      </p>
+    </div>
+    ${rows}
+  `;
+}
+
+function renderAds() {
+  const list = ads.map(a => `
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-semibold">📢 ${a.label}</div>
+        <div class="text-xs text-slate-400">${fmtDate(a.atUtc)}</div>
+      </div>
+      <p class="mt-2 text-sm">${escapeHtml(a.content)}</p>
+
+      <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-400">
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">Duration: <span class="text-slate-200">${a.duration}</span></div>
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">Spend: <span class="text-slate-200">$${a.spendUsd}</span></div>
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">Targeting: <span class="text-slate-200">${escapeHtml(a.targeting)}</span></div>
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">Performance: <span class="text-slate-200">${a.performance.impressions} imp / ${a.performance.clicks} clicks</span></div>
+      </div>
+
+      <div class="mt-3 text-xs text-slate-500">
+        Rule: Ad history is archived forever + searchable. No retroactive hiding.
+      </div>
+    </div>
+  `).join("");
+
+  return `
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <h1 class="text-lg font-semibold">Ads Archive (Forever)</h1>
+      <p class="mt-1 text-sm text-slate-400">Every ad must be marked as Ad, archived forever, and searchable (includes spend fields).</p>
+    </div>
+    ${list}
+  `;
+}
+
+function renderNotifications() {
+  const items = notifications
+    .slice()
+    .sort((a,b)=> new Date(b.atUtc) - new Date(a.atUtc))
+    .map(n => `
+      <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="text-xs text-slate-400">${fmtDate(n.atUtc)}</div>
+            <div class="mt-1 text-sm ${n.read ? "text-slate-400" : "text-slate-200"}">${escapeHtml(n.text)}</div>
+          </div>
+          <button class="toggleRead rounded-xl border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800" data-id="${n.id}">
+            ${n.read ? "Mark unread" : "Mark read"}
+          </button>
+        </div>
+      </div>
+    `).join("");
+
+  return `
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <h1 class="text-lg font-semibold">Notifications</h1>
+      <p class="mt-1 text-sm text-slate-400">Real-time events: mentions, replies, follows, edits on posts you interacted with, project updates.</p>
+      ${actionGate("Managing notifications")}
+    </div>
+    ${card("Inbox", `<div class="space-y-2">${items}</div>`)}
+  `;
+}
+
+function renderUploadTemplate() {
+  return `
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <h1 class="text-lg font-semibold">Upload Project (Template)</h1>
+      <p class="mt-1 text-sm text-slate-400">
+        Self-serve onboarding: upload whitepaper + optional modules. All projects use the same rules (neutrality).
+      </p>
+      ${actionGate("Creating a project")}
+    </div>
+
+    ${card("Base Template (Required)", `
+      <div class="grid grid-cols-1 gap-3">
+        ${field("Project Name","e.g., MyProject Protocol")}
+        ${field("Logo","Upload")}
+        ${field("Description","Short summary (public)")}
+        ${field("Links","Website, X, GitHub, Docs")}
+        ${field("Whitepaper Upload","Append-only, versioned, hashed")}
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-500">
+          Rule: documents are append-only. Updates create new versions; old versions remain accessible and indexable.
+        </div>
+      </div>
+    `)}
+
+    ${card("Optional Modules (Toggle)", `
+      <div class="space-y-2">
+        ${toggleRow("Governance / Voting (OFF by default)","If enabled: votes public + immutable once finalized.")}
+        ${toggleRow("Token Contract Details","Chain, address, verification links.")}
+        ${toggleRow("Claims & Roadmap","Claims must support evidence attachments (append-only).")}
+        ${toggleRow("Audits","Audit reports immutable, timestamped.")}
+        ${toggleRow("Treasury","If applicable; verifiable references.")}
+      </div>
+    `)}
+  `;
+}
+
+function renderSearch() {
+  return `
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <h1 class="text-lg font-semibold">Search & Discovery</h1>
+      <p class="mt-1 text-sm text-slate-400">
+        Search across projects, posts, tags, and users. Filters include edited/deleted/identity changes.
+      </p>
+    </div>
+
+    ${card("Search", `
+      <div class="grid grid-cols-1 gap-3">
+        <input id="q" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Search projects, posts, tags..." />
+        <div class="flex flex-wrap gap-2 text-xs">
+          ${filterPill("projects","Projects")}
+          ${filterPill("posts","Posts")}
+          ${filterPill("edited","Edited 🔺")}
+          ${filterPill("deleted","Deleted 🗑")}
+          ${filterPill("identity","Identity ⚠️")}
+        </div>
+        <button id="btnSearch" class="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-medium hover:bg-indigo-500">Search</button>
+      </div>
+
+      <div id="results" class="mt-4 space-y-2"></div>
+    `)}
+  `;
+}
+
+/* ---------------------------
+   Tiny UI Helpers
+----------------------------*/
+function field(label, placeholder) {
+  return `
+    <label class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+      <div class="text-xs font-semibold text-slate-300">${label}</div>
+      <input class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 outline-none" placeholder="${placeholder}" disabled />
+      <div class="mt-2 text-xs text-slate-500">Demo-only field (backend will validate + store)</div>
+    </label>
+  `;
+}
+
+function toggleRow(label, note) {
+  return `
+    <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+      <div>
+        <div class="text-sm font-medium">${label}</div>
+        <div class="text-xs text-slate-500">${note}</div>
+      </div>
+      <button class="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300">OFF</button>
+    </div>
+  `;
+}
+
+let searchFilters = new Set(["projects","posts"]);
+function filterPill(key, label) {
+  return `<button class="pill rounded-full border border-slate-700 px-3 py-1 hover:bg-slate-800" data-key="${key}">${label}</button>`;
+}
+
+/* ---------------------------
+   Router
+----------------------------*/
+function go(hash) { location.hash = hash; }
+
+function renderRoute() {
+  const hash = location.hash || "#/home";
+  const view = document.getElementById("view");
+
+  // highlight active link
+  document.querySelectorAll(".navlink").forEach(a => {
+    a.classList.toggle("bg-slate-800", a.getAttribute("href") === hash);
+  });
+
+  const parts = hash.replace("#/","").split("/");
+  const page = parts[0];
+
+  if (page === "home") view.innerHTML = renderHome();
+  else if (page === "projects") view.innerHTML = renderProjectsDirectory();
+  else if (page === "project") view.innerHTML = renderProjectProfile(parts[1]);
+  else if (page === "post") view.innerHTML = renderPostDetail(parts[1]);
+  else if (page === "upload") view.innerHTML = renderUploadTemplate();
+  else if (page === "governance") view.innerHTML = renderGovernance();
+  else if (page === "ads") view.innerHTML = renderAds();
+  else if (page === "notifications") view.innerHTML = renderNotifications();
+  else if (page === "search") view.innerHTML = renderSearch();
+  else view.innerHTML = card("Not Found", "Unknown route.");
+
+  bindHandlers();
+}
+
+/* ---------------------------
+   Event Handlers
+----------------------------*/
+function bindHandlers() {
+  // module toggles (demo: blocked in read-only)
+  document.querySelectorAll(".modToggle").forEach(btn => {
+    btn.onclick = () => {
+      if (state.readOnly) return alert("Read-only mode: module changes require login.");
+      const key = btn.getAttribute("data-key");
+      const p = projects[0];
+      p.modules[key] = !p.modules[key];
+      // record identity/config change marker in history (demo)
+      p.identityHistory.unshift({
+        type: "updated",
+        marker: "🟣",
+        field: "Module toggle",
+        from: `${key}=${!p.modules[key]}`,
+        to: `${key}=${p.modules[key]}`,
+        atUtc: nowISO()
+      });
+      renderRoute();
+    };
+  });
+
+  // notifications read/unread
+  document.querySelectorAll(".toggleRead").forEach(btn => {
+    btn.onclick = () => {
+      if (state.readOnly) return alert("Read-only mode: managing notifications requires login.");
+      const id = btn.getAttribute("data-id");
+      const n = notifications.find(x => x.id === id);
+      if (n) n.read = !n.read;
+      renderRoute();
+    };
+  });
+
+  // search
+  const btnSearch = document.getElementById("btnSearch");
+  if (btnSearch) {
+    btnSearch.onclick = () => {
+      const q = (document.getElementById("q").value || "").toLowerCase().trim();
+      const results = document.getElementById("results");
+      const out = [];
+
+      if (!q) {
+        results.innerHTML = `<div class="text-sm text-slate-400">Type something to search…</div>`;
+        return;
+      }
+
+      if (searchFilters.has("projects")) {
+        projects.forEach(p => {
+          if (p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)) {
+            out.push(`<a class="block rounded-xl border border-slate-800 bg-slate-950 p-3 hover:bg-slate-900" href="#/project/${p.slug}">
+              <div class="text-sm font-semibold">Project: ${escapeHtml(p.name)}</div>
+              <div class="mt-1 text-xs text-slate-400">${escapeHtml(p.description)}</div>
+            </a>`);
+          }
+        });
+      }
+
+      if (searchFilters.has("posts")) {
+        posts.forEach(p => {
+          const text = (p.status === "deleted") ? (p.versions?.[0]?.text || "") : (p.current?.text || "");
+          if (text.toLowerCase().includes(q)) {
+            const marker = p.changeMarker ? badge(p.changeMarker, "Change") : "";
+            out.push(`<a class="block rounded-xl border border-slate-800 bg-slate-950 p-3 hover:bg-slate-900" href="#/post/${p.id}">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-semibold">Post: ${escapeHtml(p.id)}</div>
+                ${marker}
+              </div>
+              <div class="mt-1 text-xs text-slate-400">${escapeHtml(text).slice(0,120)}...</div>
+            </a>`);
+          }
+        });
+      }
+
+      // filter-only (edited/deleted/identity)
+      if (searchFilters.has("edited")) {
+        posts.filter(p => p.changeMarker === "🔺").forEach(p => out.push(`<div class="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">Edited post found: <a class="underline" href="#/post/${p.id}">${p.id}</a></div>`));
+      }
+      if (searchFilters.has("deleted")) {
+        posts.filter(p => p.status === "deleted").forEach(p => out.push(`<div class="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">Deleted tombstone: <a class="underline" href="#/post/${p.id}">${p.id}</a></div>`));
+      }
+      if (searchFilters.has("identity")) {
+        projects[0].identityHistory.slice(0,3).forEach(h => out.push(`<div class="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">Identity event: ${h.field} • ${h.from} → ${h.to}</div>`));
+      }
+
+      results.innerHTML = out.length ? out.join("") : `<div class="text-sm text-slate-400">No results.</div>`;
+    };
+
+    // filter pills
+    document.querySelectorAll(".pill").forEach(p => {
+      p.onclick = () => {
+        const key = p.getAttribute("data-key");
+        if (searchFilters.has(key)) searchFilters.delete(key);
+        else searchFilters.add(key);
+        p.classList.toggle("bg-slate-800");
+      };
+    });
+  }
+}
+
+/* ---------------------------
+   Top Controls
+----------------------------*/
+document.getElementById("btnReadOnly").onclick = () => {
+  state.readOnly = !state.readOnly;
+  document.getElementById("btnReadOnly").textContent = `Read-only: ${state.readOnly ? "ON" : "OFF"}`;
+  renderRoute();
+};
+
+document.getElementById("btnLogin").onclick = () => {
+  state.loggedIn = !state.loggedIn;
+  state.readOnly = !state.loggedIn ? true : false;
+  document.getElementById("btnLogin").textContent = state.loggedIn ? "Logout (mock)" : "Login (mock)";
+  document.getElementById("btnReadOnly").textContent = `Read-only: ${state.readOnly ? "ON" : "OFF"}`;
+  renderRoute();
+};
+
+/* ---------------------------
+   Market Render
+----------------------------*/
+function renderMarket() {
+  document.getElementById("market").innerHTML = marketTokens.map(t => `
+    <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+      <div class="text-sm font-semibold">${t.sym}</div>
+      <div class="text-right">
+        <div class="text-sm">${t.price}</div>
+        <div class="text-xs text-slate-400">${t.change}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ---------------------------
+   HTML escape
+----------------------------*/
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* ---------------------------
+   Boot
+----------------------------*/
+window.addEventListener("hashchange", renderRoute);
+renderMarket();
+renderRoute();
+</script>
+
+</body>
+</html>
