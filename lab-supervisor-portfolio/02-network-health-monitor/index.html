@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Network Health Monitor</title><style>
+body{font-family:Arial;margin:0;background:#07111f;color:#dbeafe}header{padding:22px;background:#0b1628}main{padding:24px;max-width:1150px;margin:auto}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card,.device{background:#0f2138;border:1px solid #1f3b5b;border-radius:14px;padding:16px}.value{font-size:28px;font-weight:bold}.list{margin-top:20px;display:grid;gap:12px}.device{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;align-items:center}.up{color:#4ade80}.down{color:#f87171}.warn{color:#facc15}button{padding:10px 14px;border:0;border-radius:8px;background:#38bdf8;color:#062033;font-weight:bold;cursor:pointer}@media(max-width:760px){.cards{grid-template-columns:1fr 1fr}.device{grid-template-columns:1fr 1fr}}
+</style></head><body><header><h1>Network Health Monitor</h1><div>Live-style monitoring simulation for university computer labs</div></header><main>
+<div class="cards"><div class="card">Devices Online<div class="value" id="online"></div></div><div class="card">Avg Latency<div class="value" id="avg"></div></div><div class="card">Alerts<div class="value" id="alerts"></div></div><div class="card">Uptime<div class="value">99.7%</div></div></div>
+<p><button onclick="scan()">Run Network Scan</button></p><div id="devices" class="list"></div>
+<script>
+let data=[
+{name:'Core Router',ip:'192.168.1.1',type:'Router',status:'UP',lat:3},
+{name:'Lab-A Switch',ip:'192.168.10.2',type:'Switch',status:'UP',lat:5},
+{name:'Lab-B Switch',ip:'192.168.20.2',type:'Switch',status:'UP',lat:7},
+{name:'Faculty AP',ip:'192.168.30.5',type:'Wi-Fi AP',status:'UP',lat:18},
+{name:'Lab Printer',ip:'192.168.10.50',type:'Printer',status:'DOWN',lat:0},
+{name:'Backup Server',ip:'192.168.1.20',type:'Server',status:'UP',lat:11}];
+function render(){devices.innerHTML='';data.forEach(d=>{let cls=d.status==='UP'?(d.lat>15?'warn':'up'):'down';devices.innerHTML+=`<div class="device"><b>${d.name}</b><span>${d.type}</span><span>${d.ip}</span><span class="${cls}">${d.status}</span><span>${d.status==='UP'?d.lat+' ms':'No response'}</span></div>`});let up=data.filter(d=>d.status==='UP');online.textContent=up.length+'/'+data.length;avg.textContent=Math.round(up.reduce((s,d)=>s+d.lat,0)/up.length)+' ms';alerts.textContent=data.filter(d=>d.status==='DOWN'||d.lat>15).length}
+function scan(){data=data.map(d=>({...d,lat:d.status==='UP'?Math.max(1,Math.round(d.lat+(Math.random()*10-5))):0}));render()}
+render()
+</script></main></body></html>
