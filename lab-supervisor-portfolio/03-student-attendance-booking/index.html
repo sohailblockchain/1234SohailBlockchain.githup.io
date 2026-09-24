@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Student Attendance & Lab Booking</title><style>
+body{font-family:Arial;margin:0;background:#f7f8fc;color:#20243a}header{padding:22px;background:#4f46e5;color:#fff}main{padding:24px;max-width:1100px;margin:auto}.top{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:#fff;border-radius:14px;padding:17px;box-shadow:0 2px 12px #00000010}.num{font-size:28px;font-weight:700}.sessions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}.session{background:white;border-radius:14px;padding:18px}.bar{height:10px;background:#e5e7eb;border-radius:10px;overflow:hidden}.fill{height:100%;background:#4f46e5}button{padding:9px 12px;border:0;border-radius:8px;background:#4f46e5;color:#fff;cursor:pointer}.present{color:#15803d}@media(max-width:700px){.top,.sessions{grid-template-columns:1fr}}
+</style></head><body><header><h1>Student Attendance & Lab Booking System</h1><div>Manage practical sessions, lab capacity and attendance</div></header><main>
+<div class="top"><div class="card">Today's Sessions<div class="num">4</div></div><div class="card">Students Expected<div class="num">126</div></div><div class="card">Current Utilization<div class="num">78%</div></div></div>
+<div class="sessions" id="sessions"></div>
+<script>
+let s=[
+{course:'Programming Fundamentals',lab:'Lab A',time:'09:00–10:30',teacher:'Dr. Ali',present:28,total:32},
+{course:'Database Systems',lab:'Lab B',time:'11:00–12:30',teacher:'Ms. Sana',present:25,total:30},
+{course:'Web Engineering',lab:'Lab A',time:'13:30–15:00',teacher:'Mr. Hamza',present:31,total:34},
+{course:'Computer Networks',lab:'Lab C',time:'15:15–16:45',teacher:'Dr. Raza',present:22,total:30}];
+function render(){sessions.innerHTML='';s.forEach((x,i)=>{let p=Math.round(x.present/x.total*100);sessions.innerHTML+=`<div class="session"><h3>${x.course}</h3><p><b>${x.lab}</b> • ${x.time}</p><p>Instructor: ${x.teacher}</p><p class="present">Attendance: ${x.present}/${x.total} (${p}%)</p><div class="bar"><div class="fill" style="width:${p}%"></div></div><p><button onclick="mark(${i})">Mark +1 Present</button></p></div>`})}
+function mark(i){if(s[i].present<s[i].total)s[i].present++;render()}
+render()
+</script></main></body></html>
