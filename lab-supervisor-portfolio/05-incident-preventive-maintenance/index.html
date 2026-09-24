@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Incident & Preventive Maintenance</title><style>
+body{font-family:Arial;margin:0;background:#fff7ed;color:#292524}header{background:#9a3412;color:white;padding:22px}main{padding:24px;max-width:1100px;margin:auto}.row{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{background:white;border-radius:14px;padding:18px;box-shadow:0 2px 12px #0001}.item{border-left:5px solid #fb923c;padding:12px;margin:10px 0;background:#fffaf5}.done{border-left-color:#22c55e}.date{font-size:13px;color:#78716c}button{padding:9px 12px;border:0;border-radius:8px;background:#9a3412;color:white;cursor:pointer}@media(max-width:750px){.row{grid-template-columns:1fr}}
+</style></head><body><header><h1>Lab Incident & Preventive Maintenance System</h1><div>Reduce downtime through structured maintenance and incident tracking</div></header><main><div class="row">
+<div class="panel"><h2>Preventive Maintenance Schedule</h2><div id="maint"></div></div>
+<div class="panel"><h2>Recent Incidents</h2><div id="inc"></div></div>
+</div><div class="panel" style="margin-top:18px"><h2>Interview Talking Points</h2><p>This system demonstrates a preventive approach: schedule cleaning, OS updates, backup checks, UPS tests, network inspections and security patching before failures affect students or faculty.</p></div>
+<script>
+let maintenance=[
+{task:'Clean CPU vents & keyboards — Lab A',date:'2026-09-26',done:false},
+{task:'Windows/Linux security updates — Lab B',date:'2026-09-27',done:false},
+{task:'UPS battery health test — Server Room',date:'2026-09-28',done:false},
+{task:'Verify backup restore procedure',date:'2026-09-29',done:false}];
+let incidents=[
+{title:'Unexpected shutdown — PC B-12',date:'2026-09-22',status:'Resolved'},
+{title:'DHCP conflict — Lab A',date:'2026-09-21',status:'Resolved'},
+{title:'Projector overheating warning',date:'2026-09-23',status:'Monitoring'}];
+function render(){maint.innerHTML='';maintenance.forEach((x,i)=>maint.innerHTML+=`<div class="item ${x.done?'done':''}"><b>${x.task}</b><div class="date">Due: ${x.date}</div><p><button onclick="completeTask(${i})">${x.done?'Completed':'Mark Complete'}</button></p></div>`);inc.innerHTML='';incidents.forEach(x=>inc.innerHTML+=`<div class="item ${x.status==='Resolved'?'done':''}"><b>${x.title}</b><div class="date">${x.date} • ${x.status}</div></div>`)}
+function completeTask(i){maintenance[i].done=true;render()}
+render()
+</script></main></body></html>
