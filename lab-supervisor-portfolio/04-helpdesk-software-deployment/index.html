@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IT Helpdesk & Deployment</title><style>
+body{font-family:Arial;margin:0;background:#f3f4f6;color:#111827}header{padding:22px;background:#0f766e;color:white}main{padding:24px;max-width:1150px;margin:auto}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.m,.ticket{background:white;padding:16px;border-radius:14px}.n{font-size:26px;font-weight:bold}.ticket{margin-top:12px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;align-items:center}.high{color:#b91c1c}.medium{color:#b45309}.low{color:#15803d}button{background:#0f766e;color:white;border:0;border-radius:8px;padding:8px 12px;cursor:pointer}@media(max-width:750px){.metrics{grid-template-columns:1fr 1fr}.ticket{grid-template-columns:1fr 1fr}}
+</style></head><body><header><h1>IT Helpdesk & Software Deployment Dashboard</h1><div>Track lab support tickets and software installation requests</div></header><main>
+<div class="metrics"><div class="m">Open Tickets<div class="n" id="open"></div></div><div class="m">High Priority<div class="n" id="high"></div></div><div class="m">Resolved Today<div class="n" id="resolved"></div></div><div class="m">Pending Deployments<div class="n">3</div></div></div>
+<h2>Support Queue</h2><div id="list"></div>
+<script>
+let t=[
+{id:'INC-1042',title:'VS Code extensions missing in Lab A',priority:'Medium',room:'Lab A',status:'Open'},
+{id:'INC-1043',title:'PC A-17 cannot join domain',priority:'High',room:'Lab A',status:'Open'},
+{id:'INC-1044',title:'MySQL service not starting',priority:'High',room:'Lab B',status:'Open'},
+{id:'REQ-2045',title:'Install Python 3.13 + Jupyter',priority:'Low',room:'Lab C',status:'Resolved'},
+{id:'INC-1046',title:'Projector HDMI signal issue',priority:'Medium',room:'Lab B',status:'Open'}];
+function render(){list.innerHTML='';t.forEach((x,i)=>{list.innerHTML+=`<div class="ticket"><b>${x.id} — ${x.title}</b><span>${x.room}</span><span class="${x.priority.toLowerCase()}">${x.priority}</span><span>${x.status}</span><button onclick="resolveTicket(${i})">Resolve</button></div>`});open.textContent=t.filter(x=>x.status==='Open').length;high.textContent=t.filter(x=>x.priority==='High'&&x.status==='Open').length;resolved.textContent=t.filter(x=>x.status==='Resolved').length}
+function resolveTicket(i){t[i].status='Resolved';render()}
+render()
+</script></main></body></html>
